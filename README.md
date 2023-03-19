@@ -15,4 +15,4 @@ simple firewall to allow requests to single-page app only from white-listed mach
 - add and remove allowed ip addresses by modifying the `WHITE_LIST` array.
 
 
-- run `npm start` from the `./build` folder the to serve the static content 
+- run `npm start` from the `./build` folder to serve the static content 
