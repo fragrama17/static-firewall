@@ -9,7 +9,7 @@ const WHITE_LIST = ['::1'];
 const firewall = (req, res, next) => {
 
     if (WHITE_LIST.indexOf(req.ip) === -1)
-        return res.status(401).send('Hi Mate ! you are not allowed to see this, sorry');
+        return res.status(403).send('Hi Mate ! you are not allowed to see this, sorry');
 
     next();
 }
