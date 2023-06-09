@@ -1,10 +1,35 @@
 const express = require('express');
 const http = require('http');
+const path = require("path");
+const yargs = require('yargs');
 const app = express();
 
-const PORT = 8080;
-
+//TODO change the path of the static content folder if -f (or --folder) command specified
+const DEFAULT_PATH = "build";
+const DEFAULT_PORT = 3000;
 const WHITE_LIST = ['::1'];
+const ipAddressRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$|^::1$|^::ffff:([0-9]{1,3}\.){3}[0-9]{1,3}$/;
+
+let port = DEFAULT_PORT;
+
+const argv = yargs
+    .option('p', {
+        alias: 'port',
+        description: 'Specify the port',
+        type: 'number'
+    })
+    .option('i', {
+        alias: 'ips',
+        description: 'Specify the static ip addresses to allow requests',
+        type: 'array',
+        default: []
+    })
+    .help()
+    .alias('help', 'h')
+    .argv;
+
+port = argv.port || DEFAULT_PORT;
+WHITE_LIST.push(...argv.ips.filter(ip => ipAddressRegex.test(ip)));
 
 const firewall = (req, res, next) => {
 
@@ -14,8 +39,10 @@ const firewall = (req, res, next) => {
     next();
 }
 
-app.use(firewall, express.static(__dirname));
+app.use(firewall, express.static(path.join(__dirname, DEFAULT_PATH)));
 
-http.createServer(app).listen(PORT, () => {
-    console.log('static server listening on port', PORT);
+http.createServer(app).listen(port, () => {
+    console.log('static server listening on port', port);
 });
+
+console.log("Ips allowed:", WHITE_LIST);
