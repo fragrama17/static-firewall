@@ -3,10 +3,13 @@
 simple firewall to allow requests to single-page app only from white-listed machines with static ip address
 
 ### Get Started
-- copy `index.js` and `package.json` file into the frontend `./build` folder.
+
+- create a folder where you're going to copy the `./build` folder
+
+- copy `index.js` and `package.json` file next to the frontend `./build` folder.
 
 
-- open a terminal from the `./build` folder and run `npm install`
+- open a terminal from the created folder and run `npm install`
 
 
 - specify the port by changing the `PORT` const.
