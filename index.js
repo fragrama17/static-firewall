@@ -2,21 +2,25 @@ const express = require('express');
 const http = require('http');
 const path = require("path");
 const yargs = require('yargs');
-const app = express();
+const {Router} = require("express");
 
-//TODO change the path of the static content folder if -f (or --folder) command specified
 const DEFAULT_PATH = "build";
 const DEFAULT_PORT = 3000;
 const WHITE_LIST = ['::1'];
 const ipAddressRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$|^::1$|^::ffff:([0-9]{1,3}\.){3}[0-9]{1,3}$/;
 
-let port = DEFAULT_PORT;
 
 const argv = yargs
     .option('p', {
         alias: 'port',
         description: 'Specify the port',
-        type: 'number'
+        type: 'number',
+        default: DEFAULT_PORT
+    })
+    .option('f', {
+        alias: 'folder',
+        description: 'Specify the static folder where the index.html resides',
+        default: DEFAULT_PATH
     })
     .option('i', {
         alias: 'ips',
@@ -28,7 +32,8 @@ const argv = yargs
     .alias('help', 'h')
     .argv;
 
-port = argv.port || DEFAULT_PORT;
+const port = argv.port || DEFAULT_PORT;
+const folder = argv.folder || DEFAULT_PATH;
 WHITE_LIST.push(...argv.ips.filter(ip => ipAddressRegex.test(ip)));
 
 const firewall = (req, res, next) => {
@@ -39,7 +44,13 @@ const firewall = (req, res, next) => {
     next();
 }
 
-app.use(firewall, express.static(path.join(__dirname, DEFAULT_PATH)));
+const redirectRouter = Router();
+redirectRouter.get('*', (req, res, next) => {
+    res.sendFile(path.resolve(__dirname, folder, 'index.html'));
+});
+
+const app = express();
+app.use(firewall, redirectRouter);
 
 http.createServer(app).listen(port, () => {
     console.log('static server listening on port', port);
