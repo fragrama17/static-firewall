@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const path = require("path");
 const yargs = require('yargs');
-const {Router} = require("express");
 
 const DEFAULT_PATH = "build";
 const DEFAULT_PORT = 3000;
@@ -38,19 +37,22 @@ WHITE_LIST.push(...argv.ips.filter(ip => ipAddressRegex.test(ip)));
 
 const firewall = (req, res, next) => {
 
-    if (WHITE_LIST.indexOf(req.ip) === -1)
+    if (WHITE_LIST.indexOf(req.ip) === -1) {
+        console.log("NOT ALLOWED:", req.ip, new Date().toLocaleString("en-au"));
         return res.status(403).send('Hi Mate ! you are not allowed to see this, sorry');
+    }
 
+    console.log(req.ip, new Date().toLocaleString("en-au"));
     next();
 }
 
-const redirectRouter = Router();
-redirectRouter.get('*', (req, res, next) => {
+const app = express();
+
+app.use(firewall);
+app.use(express.static(path.join(__dirname, folder))); // Serve static files from the specified folder
+app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, folder, 'index.html'));
 });
-
-const app = express();
-app.use(firewall, redirectRouter);
 
 http.createServer(app).listen(port, () => {
     console.log('static server listening on port', port);
